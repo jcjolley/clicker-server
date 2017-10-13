@@ -4,17 +4,22 @@
   "description": "A websocket driven clicker server",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc-watch -p . --onSuccess \"node index.js\""
   },
   "author": "jolleyboy",
   "license": "MIT",
   "devDependencies": {
     "@types/core-js": "^0.9.43",
     "@types/node": "^8.0.34",
+    "@types/ramda": "github:types/npm-ramda#dist",
     "@types/ws": "^3.2.0",
+    "tsc-watch": "^1.0.8",
     "ws": "^3.2.0"
   },
   "dependencies": {
-    "core-js": "^2.5.1"
+    "core-js": "^2.5.1",
+    "ramda": "^0.25.0",
+    "redux": "^3.7.2"
   }
 }
