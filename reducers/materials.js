@@ -23,7 +23,7 @@ function materials(state = defaultState, { type, payload }) {
 exports.default = materials;
 function repairWall(state) {
     const { wood, copper, wallHp } = state;
-    if (wood > 10 && copper > 10 && wallHp <= 990) {
+    if (wood >= 10 && copper >= 10 && wallHp <= 990) {
         return R.evolve({
             wood: R.subtract(R.__, 10),
             copper: R.subtract(R.__, 10),
@@ -36,5 +36,5 @@ function damageWall(state, payload) {
     if (state.wallHp > payload)
         return R.evolve({ wallHp: R.subtract(R.__, payload) }, state);
     else
-        return R.evolve({ wallHp: 0 }, state);
+        return R.assoc('wallHp', 0, state);
 }

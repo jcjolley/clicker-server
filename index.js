@@ -23,6 +23,7 @@ const setupSubscription = R.once((ws, store) => store.subscribe(broadcastOnUpdat
 const startGlobalTick = R.once((ws) => {
     const tick = {
         msg: 'Global Tick',
+        numPlayers: wss.clients.size
     };
     setInterval(() => broadcast(ws, tick), 5 * 1000);
 });
@@ -33,14 +34,21 @@ function broadcast(ws, msg) {
         }
     });
 }
+function broadcastOthers(ws, msg) {
+    wss.clients.forEach((client) => {
+        if (client != ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(msg));
+        }
+    });
+}
 const handleAction = (ws) => {
     ws.on('message', (msg) => {
         const { user, action } = JSON.parse(msg);
         const response = {
             display: true,
-            msg: `${user} contributed ${JSON.stringify(action)}`
+            msg: translateAction(user, action)
         };
-        broadcast(ws, response);
+        broadcastOthers(ws, response);
         store.dispatch(action);
     });
 };
@@ -53,17 +61,29 @@ const broadcastOnUpdate = (ws, store) => () => {
 };
 const beginTheAttack = R.once((ws, store) => {
     setInterval(() => {
-        const damage = getRandomInt(1, 20);
-        store.dispatch({ type: 'DAMAGE WALL', payload: damage });
-        const response = {
-            display: true,
-            msg: `An evil goblin has attacked the wall for ${damage} damage!!`
-        };
-        broadcast(ws, response);
+        if (store.getState().materials.wallHp > 0) {
+            const damage = getRandomInt(1, 20);
+            store.dispatch({ type: 'DAMAGE WALL', payload: damage });
+            const response = {
+                display: true,
+                msg: `An evil goblin has attacked the wall for ${damage} damage!!`
+            };
+            broadcast(ws, response);
+        }
     }, 2500);
 });
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+function translateAction(user, { type, payload }) {
+    switch (type) {
+        case 'ADD WOOD':
+            return `${user} contributed ${payload} wood to the cause.`;
+        case 'ADD COPPER':
+            return `${user} contributed ${payload} copper to the cause.`;
+        case 'REPAIR WALL':
+            return `${user} repaired the wall for ${payload} hp.`;
+    }
 }
